@@ -18,7 +18,6 @@ db.exec(`
     systolic  INTEGER NOT NULL,
     diastolic INTEGER NOT NULL,
     pulse     INTEGER,
-    notes     TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 

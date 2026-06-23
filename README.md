@@ -3,7 +3,7 @@
 Aplicació autoallotjada per portar un **registre diari de la tensió arterial**
 (sistòlica / màxima i diastòlica / mínima), amb diverses lectures per dia,
 vista calendari i exportació a PDF, CSV i PDF calendari. Pensada per córrer al
-teu servidor de casa amb Docker, igual que [aplom](https://github.com/gerardag/aplom).
+teu servidor de casa amb Docker.
 
 ## Què fa
 
@@ -17,6 +17,8 @@ teu servidor de casa amb Docker, igual que [aplom](https://github.com/gerardag/a
   - **CSV** (per obrir amb Excel / full de càlcul, amb BOM UTF-8).
   - **PDF llista** detallada amb resum i taula.
   - **PDF calendari**: una graella mensual per cada mes del rang.
+  - **JSON** (còpia de seguretat, per importar posteriorment).
+- **Importació** de fitxers JSON per restaurar còpies de seguretat.
 - Persisteix tot en una base de dades **SQLite** dins un volum Docker.
 
 ## Requisits
@@ -85,7 +87,9 @@ DATA_DIR=./data PORT=3000 node server.js
 │   ├── export.js           # generació de CSV i PDF (pdfkit)
 │   └── package.json
 └── frontend/
-    └── index.html          # interfície (parla amb l'API)
+    ├── index.html          # interfície (parla amb l'API)
+    ├── favicon.svg          # icones i manifest PWA
+    └── site.webmanifest
 ```
 
 ### API
@@ -97,7 +101,8 @@ DATA_DIR=./data PORT=3000 node server.js
 | PUT    | `/api/readings/:id`           | editar una lectura                             |
 | DELETE | `/api/readings/:id`           | esborrar una lectura                           |
 | GET    | `/api/stats?from&to`          | resum estadístic d'un rang                     |
-| GET    | `/api/export?format&from&to`  | exportar (`format` = `csv` \| `pdf` \| `calendar`) |
+| GET    | `/api/export?format&from&to`  | exportar (`format` = `csv` \| `pdf` \| `calendar` \| `json`) |
+| POST   | `/api/import`                 | importar lectures des d'un JSON                    |
 
 ## Classificació de la tensió
 

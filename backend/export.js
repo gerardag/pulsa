@@ -3,7 +3,7 @@ import { classify, daysBetween, MONTHS_CA, WEEKDAYS_CA } from './classify.js';
 
 // ---------- CSV ----------
 export function toCSV(rows) {
-  const header = ['data', 'hora', 'sistolica', 'diastolica', 'pulsacions', 'classificacio', 'notes'];
+  const header = ['data', 'hora', 'sistolica', 'diastolica', 'pulsacions', 'classificacio'];
   const esc = (v) => {
     if (v === null || v === undefined) return '';
     const s = String(v);
@@ -14,7 +14,7 @@ export function toCSV(rows) {
     const cat = classify(r.systolic, r.diastolic);
     lines.push([
       r.date, r.time, r.systolic, r.diastolic,
-      r.pulse ?? '', cat.label, r.notes ?? ''
+      r.pulse ?? '', cat.label
     ].map(esc).join(','));
   }
   // BOM perquè Excel reconegui UTF-8
@@ -50,8 +50,7 @@ export function pdfList(rows, { from, to }) {
     { t: 'Sist.', x: 165, w: 45 },
     { t: 'Diast.', x: 210, w: 45 },
     { t: 'Pols', x: 255, w: 45 },
-    { t: 'Classificació', x: 300, w: 115 },
-    { t: 'Notes', x: 415, w: 140 },
+    { t: 'Classificació', x: 300, w: 255 },
   ];
 
   const drawHeader = () => {
@@ -81,7 +80,6 @@ export function pdfList(rows, { from, to }) {
     doc.text(String(r.diastolic), cols[3].x + 3, ty, { width: cols[3].w - 6 });
     doc.text(r.pulse ? String(r.pulse) : '—', cols[4].x + 3, ty, { width: cols[4].w - 6 });
     doc.fillColor(cat.color).text(cat.label, cols[5].x + 3, ty, { width: cols[5].w - 6 });
-    doc.fillColor('#333').text(r.notes || '', cols[6].x + 3, ty, { width: cols[6].w - 6 });
     doc.y = rowY + rowH;
   }
 

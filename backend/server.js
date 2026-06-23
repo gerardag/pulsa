@@ -52,9 +52,9 @@ app.post('/api/readings', (req, res) => {
   if (errs.length) return res.status(400).json({ errors: errs });
   const pulse = (b.pulse === '' || b.pulse == null) ? null : Number(b.pulse);
   const info = db.prepare(
-    `INSERT INTO readings (date, time, systolic, diastolic, pulse, notes)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  ).run(b.date, b.time, Number(b.systolic), Number(b.diastolic), pulse, b.notes || null);
+    `INSERT INTO readings (date, time, systolic, diastolic, pulse)
+     VALUES (?, ?, ?, ?, ?)`
+  ).run(b.date, b.time, Number(b.systolic), Number(b.diastolic), pulse);
   const row = db.prepare('SELECT * FROM readings WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json(withCat(row));
 });
@@ -68,8 +68,8 @@ app.put('/api/readings/:id', (req, res) => {
   if (!exists) return res.status(404).json({ error: 'no trobada' });
   const pulse = (b.pulse === '' || b.pulse == null) ? null : Number(b.pulse);
   db.prepare(
-    `UPDATE readings SET date=?, time=?, systolic=?, diastolic=?, pulse=?, notes=? WHERE id=?`
-  ).run(b.date, b.time, Number(b.systolic), Number(b.diastolic), pulse, b.notes || null, req.params.id);
+    `UPDATE readings SET date=?, time=?, systolic=?, diastolic=?, pulse=? WHERE id=?`
+  ).run(b.date, b.time, Number(b.systolic), Number(b.diastolic), pulse, req.params.id);
   const row = db.prepare('SELECT * FROM readings WHERE id = ?').get(req.params.id);
   res.json(withCat(row));
 });
@@ -187,6 +187,12 @@ app.get('/api/export', (req, res) => {
   const rows = fetchRange(from, to);
   const stamp = `${from}_${to}`;
 
+  if (format === 'json') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="tensio_${stamp}.json"`);
+    return res.json(rows);
+  }
+
   if (format === 'csv') {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="tensio_${stamp}.csv"`);
@@ -206,6 +212,31 @@ app.get('/api/export', (req, res) => {
   }
 
   res.status(400).json({ error: 'format desconegut (csv | pdf | calendar)' });
+});
+
+// ---------- importació ----------
+app.post('/api/import', (req, res) => {
+  const { readings, replace } = req.body || {};
+  if (!Array.isArray(readings)) return res.status(400).json({ error: 'El fitxer ha de contenir un array de lectures.' });
+
+  if (replace) {
+    db.prepare('DELETE FROM readings').run();
+  }
+
+  const insert = db.prepare(
+    `INSERT INTO readings (date, time, systolic, diastolic, pulse) VALUES (?, ?, ?, ?, ?)`
+  );
+
+  let imported = 0;
+  for (const r of readings) {
+    const errs = validReading(r);
+    if (errs.length) continue;
+    const pulse = (r.pulse === '' || r.pulse == null) ? null : Number(r.pulse);
+    insert.run(r.date, r.time, Number(r.systolic), Number(r.diastolic), pulse);
+    imported++;
+  }
+
+  res.json({ ok: true, imported });
 });
 
 // ---------- frontend ----------
