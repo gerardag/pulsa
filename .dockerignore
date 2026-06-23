@@ -1,7 +1,12 @@
-node_modules
-backend/node_modules
-data
+**/node_modules
+**/data
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 .git
 .gitignore
+.github
+.githooks
+.env
 README.md

@@ -1,0 +1,18 @@
+services:
+  tensio:
+    # Fa pull de la imatge construïda per GitHub Actions (no la construeix localment).
+    # Per defecte agafa :latest (l'últim push a main). Per clavar una versió:
+    #   VERSION=v1.2.0 docker compose -f docker-compose.prod.yml up -d
+    image: ghcr.io/gerardag/pulsa:${VERSION:-latest}
+    container_name: tensio
+    restart: unless-stopped
+    ports:
+      # host:container — canvia la part esquerra si el 3000 ja s'usa al servidor
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_PATH=/app/data/tensio.db
+      - TZ=Europe/Madrid
+    volumes:
+      # bind mount: la base de dades SQLite persisteix entre reinicis i rebuilds
+      - ./data:/app/data
