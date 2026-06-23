@@ -3,115 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Registre de tensió</title>
+<title>Pulsa - Registre de tensió</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<style>
-  :root {
-    --bg: #f3efe6; --card: #fbf9f4; --ink: #1c2321; --muted: #5b645f;
-    --line: #d8d0c0; --accent: #2f6f4f; --accent-d: #245a3e;
-    --warn: #9a3b2e; --shadow: none; --radius: 3px;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; font: 15px/1.5 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-    background: var(--bg); color: var(--ink);
-  }
-  header {
-    border-bottom: 1px solid var(--line); padding: 20px 16px;
-  }
-  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
-  header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: 16px; }
-  .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 16px; margin-bottom: 16px;
-  }
-  .card h2 { margin: 0 0 12px; font-size: 15px; font-weight: 650; }
-  .row { display: flex; flex-wrap: wrap; gap: 10px; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--muted); font-weight: 500; }
-  input, select, textarea {
-    font: inherit; padding: 8px 10px; border: 1px solid var(--line);
-    border-radius: var(--radius); background: var(--card); color: var(--ink);
-  }
-  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
-  input.s, select.s { width: 90px; }
-  textarea { width: 100%; resize: vertical; min-height: 38px; }
-  button {
-    font: inherit; font-weight: 550; cursor: pointer; border: none;
-    border-radius: var(--radius); padding: 9px 16px; background: var(--ink); color: var(--bg);
-  }
-  button:hover { opacity: .85; }
-  button.ghost { background: none; color: var(--ink); border: 1px solid var(--line); }
-  button.ghost:hover { background: rgba(0,0,0,.04); }
-  button.danger { background: var(--warn); color: var(--bg); }
-  button.small { padding: 5px 10px; font-size: 13px; }
-  .view-toggles { display: flex; gap: 4px; align-items: center; }
-  .view-toggle { background: none; border: 1px solid var(--line); padding: 6px 10px;
-    font-size: 16px; line-height: 1; color: var(--muted); border-radius: var(--radius); }
-  .view-toggle.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .view-toggle:hover { opacity: .85; }
-  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .modal-tabs { display: flex; gap: 16px; margin-bottom: 16px; }
-  .modal-tab { background: none; border: none; padding: 0; font: inherit; font-size: 14px;
-    color: var(--muted); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
-  .modal-tab.active { color: var(--ink); font-weight: 600; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
-  th { font-size: 12px; color: var(--muted); font-weight: 600; }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: var(--radius); color: #fff; font-size: 12px; font-weight: 600; }
-  .bp { font-weight: 650; }
-  .stats { display: flex; gap: 16px; flex-wrap: wrap; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; min-width: 110px; }
-  .stat .n { font-size: 22px; font-weight: 700; }
-  .stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
-  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .cal-head h3 { margin: 0; font-size: 17px; text-transform: capitalize; }
-  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal .wd { text-align: center; font-size: 11px; color: var(--muted); font-weight: 600; padding: 4px; text-transform: uppercase; }
-  .cal .day { min-height: 78px; border: 1px solid var(--line); border-radius: var(--radius); padding: 4px; font-size: 11px; background: var(--card); overflow:hidden; }
-  .cal .day.empty { background: var(--bg); border-style: dashed; }
-  .cal .day .dn { font-weight: 600; color: var(--muted); }
-  .cal .day .avg { display:inline-block; color:#fff; border-radius: var(--radius); padding: 1px 5px; font-weight: 650; margin: 2px 0; }
-  .cal .day .rd { color: var(--muted); white-space: nowrap; }
-  .muted { color: var(--muted); }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .err { color: var(--warn); font-size: 13px; margin-top: 8px; }
-  .actions-cell button { margin-right: 4px; }
-  @media (max-width: 600px) {
-    .cal .day { min-height: 60px; }
-    input.s, select.s { width: 80px; }
-  }
-  /* Modal de configuració */
-  .modal-bg {
-    position: fixed; inset: 0; background: rgba(15,23,42,.5);
-    display: none; align-items: flex-start; justify-content: center; z-index: 50; padding: 24px 16px;
-  }
-  .modal-bg.open { display: flex; }
-  .modal {
-    background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
-    width: 100%; max-width: 440px; padding: 20px; margin-top: 6vh; position: relative;
-  }
-  .modal h2 { margin: 0 0 4px; font-size: 17px; }
-  .modal-x {
-    position: absolute; top: 14px; right: 14px;
-    background: none; border: none; padding: 4px; line-height: 1;
-    font-size: 22px; color: var(--muted); cursor: pointer; border-radius: var(--radius);
-  }
-  .modal-x:hover { color: var(--ink); }
-  .modal .field { margin-top: 14px; }
-  .modal .field input { width: 100%; }
-  .modal-actions { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
-  .modal-actions .spacer { flex: 1; }
-  .ok { color: var(--accent); font-size: 13px; margin-top: 10px; }
-  .hdr-btn { background: none; border: 1px solid var(--line); padding: 7px 10px; font-size: 16px; line-height: 1; color: var(--muted); display: inline-flex; align-items: center; }
-  .hdr-btn:hover { color: var(--ink); opacity: 1; }
-  .hdr-actions { display: flex; gap: 6px; }
-</style>
+<link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <header>
@@ -129,24 +27,37 @@
 
 <div class="wrap">
 
+  <div class="card card-centered">
+    <div class="stats" id="stats"><span class="muted">Sense dades encara.</span></div>
+  </div>
+
+  <!-- Benvinguda (visible només si no hi ha lectures) -->
+  <div class="card welcome" id="welcome" style="display:none">
+    <div class="welcome-icon">🩺</div>
+    <h2>Benvingut al registre de tensió</h2>
+    <p>Encara no tens cap lectura registrada. Comença introduint la teva primera mesura amb el formulari de sota.</p>
+    <p class="welcome-hint">Pots configurar un <strong>recordatori diari per Telegram</strong> perquè no oblidis prendre-te la tensió. Obre la configuració amb la icona <span class="welcome-gear">⚙</span> de dalt a la dreta.</p>
+    <button id="welcome-start">Registrar la primera lectura</button>
+  </div>
+
   <!-- Formulari d'entrada -->
-  <div class="card">
+  <div class="card" id="form-card">
     <h2>Nova lectura</h2>
-    <div class="row">
-      <div class="field" style="flex:1; min-width:140px"><label>Data</label><input type="date" id="f-date"></div>
-      <div class="field"><label>Hora</label><input class="s" type="time" id="f-time"></div>
+    <div class="row" style="align-items:flex-end">
+      <div class="field" style="min-width:130px"><label>Data</label><input type="date" id="f-date"></div>
+      <div class="field"><label>Hora</label><input type="time" id="f-time" style="width:110px"></div>
       <div class="field"><label>Sistòlica (màx)</label><input class="s" type="number" id="f-sys" placeholder="120" min="40" max="300"></div>
       <div class="field"><label>Diastòlica (mín)</label><input class="s" type="number" id="f-dia" placeholder="80" min="20" max="200"></div>
       <div class="field"><label>Pols (ppm)</label><input class="s" type="number" id="f-pulse" placeholder="—" min="20" max="250"></div>
+      <div style="display:flex; gap:8px; align-items:center">
+        <button id="f-save">Desar lectura</button>
+        <button class="ghost" id="f-cancel" style="display:none">Cancel·lar edició</button>
+      </div>
     </div>
-    <div style="margin-top:12px; display:flex; gap:8px; align-items:center">
-      <button id="f-save">Desar lectura</button>
-      <button class="ghost" id="f-cancel" style="display:none">Cancel·lar edició</button>
-      <span class="err" id="f-err"></span>
-    </div>
+    <span class="err" id="f-err"></span>
   </div>
 
-  <!-- Vista -->
+  <!-- Toolbar -->
   <div class="toolbar">
     <div></div>
     <div class="view-toggles">
@@ -157,10 +68,6 @@
 
   <!-- LLISTA -->
   <section id="tab-list">
-    <div class="card">
-      <h2>Resum</h2>
-      <div class="stats" id="stats"><span class="muted">Sense dades encara.</span></div>
-    </div>
     <div class="card">
       <h2>Lectures</h2>
       <div style="overflow-x:auto">
@@ -278,6 +185,10 @@
   </div>
 </div>
 
+<footer>
+  <p>Fet amb ❤️ des de Sant Celoni.</p>
+</footer>
+
 <script>
 const $ = (s) => document.querySelector(s);
 const api = (path, opts) => fetch('/api' + path, opts).then(r => r.json());
@@ -353,6 +264,13 @@ let allReadings = [];
 
 async function loadAll() {
   allReadings = await api('/readings');
+  const empty = !allReadings.length;
+  $('#welcome').style.display = empty ? '' : 'none';
+  $('#form-card').style.display = empty ? 'none' : '';
+  $('.toolbar').style.display = empty ? 'none' : '';
+  $('#tab-list').style.display = empty ? 'none' : '';
+  $('#tab-cal').style.display = empty ? 'none' : ($('.view-toggle[data-view="cal"]').classList.contains('active') ? '' : 'none');
+  $('.card-centered').style.display = empty ? 'none' : '';
   renderList();
   renderStats();
   if ($('#tab-cal').style.display !== 'none') renderCalendar();
@@ -365,7 +283,7 @@ function renderList() {
     const c = r.classification;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${r.date}</td><td>${r.time}</td>
+      <td>${r.date.split('-').reverse().join('-')}</td><td>${r.time}</td>
       <td class="bp">${r.systolic}/${r.diastolic}</td>
       <td>${r.pulse ?? '—'}</td>
       <td><span class="pill" style="background:${c.color}">${c.label}</span></td>
@@ -569,6 +487,13 @@ document.addEventListener('keydown', (e) => {
     $('#cfg-bg').classList.remove('open');
   }
 });
+
+// welcome -> mostra el formulari
+$('#welcome-start').onclick = () => {
+  $('#welcome').style.display = 'none';
+  $('#form-card').style.display = '';
+  $('#f-sys').focus();
+};
 
 // init
 resetForm();

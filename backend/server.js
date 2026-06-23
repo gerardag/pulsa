@@ -5,6 +5,7 @@ import { db, getSetting, setSetting } from './db.js';
 import { classify } from './classify.js';
 import { toCSV, pdfList, pdfCalendar } from './export.js';
 import { sendTelegram, localParts } from './telegram.js';
+import { scheduleBackup, runBackup } from './backup.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -170,6 +171,16 @@ async function checkReminder() {
 // comprova cada minut; dispara un cop quan és >= 09:00 i no hi ha lectura
 setInterval(checkReminder, 60 * 1000);
 
+// ---------- backup manual ----------
+app.post('/api/backup', (_req, res) => {
+  try {
+    runBackup();
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 // ---------- exportació ----------
 function fetchRange(from, to) {
   let sql = 'SELECT * FROM readings';
@@ -244,4 +255,5 @@ app.use(express.static(join(__dirname, '..', 'frontend')));
 
 app.listen(PORT, () => {
   console.log(`Tensió escoltant a http://0.0.0.0:${PORT}`);
+  scheduleBackup();
 });
