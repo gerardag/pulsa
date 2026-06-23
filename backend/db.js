@@ -27,6 +27,14 @@ db.exec(`
     key   TEXT PRIMARY KEY,
     value TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS notification_schedules (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    time      TEXT NOT NULL,
+    last_notified TEXT,
+    enabled   INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 // helpers d'accés a la taula clau-valor de configuració
@@ -50,3 +58,14 @@ export function setSetting(key, value) {
 try {
   db.exec(`ALTER TABLE readings ADD COLUMN pulse INTEGER`);
 } catch (_) { /* ja existeix */ }
+
+// Migració: si no hi ha cap schedule, crear el per defecte (09:00)
+{
+  const count = db.prepare('SELECT COUNT(*) as n FROM notification_schedules').get();
+  if (count.n === 0) {
+    const lastNotified = getSetting('telegram_last_notified');
+    db.prepare(
+      'INSERT INTO notification_schedules (time, last_notified) VALUES (?, ?)'
+    ).run('09:00', lastNotified);
+  }
+}

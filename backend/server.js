@@ -108,11 +108,19 @@ app.get('/api/stats', (req, res) => {
 // ---------- configuració Telegram ----------
 const TZ = process.env.TZ || 'Europe/Madrid';
 
-// estat de la config sense exposar mai el token
 function configState() {
   const token = getSetting('telegram_token');
   const chatId = getSetting('telegram_chat_id');
-  return { chatId: chatId || '', hasToken: !!token, enabled: !!(token && chatId) };
+  const schedule = db.prepare(
+    'SELECT time FROM notification_schedules WHERE enabled = 1 ORDER BY id LIMIT 1'
+  ).get();
+  return {
+    chatId: chatId || '',
+    token: token || '',
+    hasToken: !!token,
+    enabled: !!(token && chatId),
+    notifyAt: schedule ? schedule.time : '09:00',
+  };
 }
 
 app.get('/api/config', (_req, res) => res.json(configState()));
@@ -122,6 +130,16 @@ app.post('/api/config', (req, res) => {
   const b = req.body || {};
   if (typeof b.token === 'string' && b.token.trim()) setSetting('telegram_token', b.token.trim());
   if (typeof b.chatId === 'string') setSetting('telegram_chat_id', b.chatId.trim() || null);
+  if (typeof b.notifyAt === 'string' && /^\d{2}:\d{2}$/.test(b.notifyAt)) {
+    const row = db.prepare(
+      'SELECT id FROM notification_schedules WHERE enabled = 1 ORDER BY id LIMIT 1'
+    ).get();
+    if (row) {
+      db.prepare('UPDATE notification_schedules SET time = ? WHERE id = ?').run(b.notifyAt, row.id);
+    } else {
+      db.prepare('INSERT INTO notification_schedules (time) VALUES (?)').run(b.notifyAt);
+    }
+  }
   res.json(configState());
 });
 
@@ -130,6 +148,7 @@ app.delete('/api/config', (_req, res) => {
   setSetting('telegram_token', null);
   setSetting('telegram_chat_id', null);
   setSetting('telegram_last_notified', null);
+  db.prepare('UPDATE notification_schedules SET last_notified = NULL').run();
   res.json(configState());
 });
 
@@ -146,29 +165,36 @@ app.post('/api/config/test', async (req, res) => {
   }
 });
 
-// ---------- recordatori diari a les 9:00 ----------
+// ---------- recordatori diari segons horaris configurats ----------
 async function checkReminder() {
   const token = getSetting('telegram_token');
   const chatId = getSetting('telegram_chat_id');
   if (!token || !chatId) return;
 
   const { date, time } = localParts(TZ);
-  if (time < '09:00') return;                                  // encara no són les 9
-  if (getSetting('telegram_last_notified') === date) return;   // ja avisat avui
 
-  const row = db.prepare('SELECT 1 FROM readings WHERE date = ? LIMIT 1').get(date);
-  if (row) return;                                             // ja hi ha lectura avui
+  const schedules = db.prepare(
+    'SELECT id, time, last_notified FROM notification_schedules WHERE enabled = 1'
+  ).all();
 
-  try {
-    await sendTelegram(token, chatId,
-      '🩺 <b>Recordatori de tensió</b>\nAvui encara no has registrat cap lectura. No oblidis prendre-te la tensió.');
-    setSetting('telegram_last_notified', date);
-  } catch (e) {
-    console.error('Error enviant recordatori de Telegram:', e.message);
+  const hasReading = db.prepare('SELECT 1 FROM readings WHERE date = ? LIMIT 1').get(date);
+  if (hasReading) return;
+
+  for (const s of schedules) {
+    if (time < s.time) continue;
+    if (s.last_notified === date) continue;
+
+    try {
+      await sendTelegram(token, chatId,
+        '🩺 <b>Recordatori de tensió</b>\nAvui encara no has registrat cap lectura. No oblidis prendre-te la tensió.');
+      db.prepare('UPDATE notification_schedules SET last_notified = ? WHERE id = ?').run(date, s.id);
+    } catch (e) {
+      console.error('Error enviant recordatori de Telegram:', e.message);
+    }
   }
 }
 
-// comprova cada minut; dispara un cop quan és >= 09:00 i no hi ha lectura
+// comprova cada minut
 setInterval(checkReminder, 60 * 1000);
 
 // ---------- backup manual ----------
@@ -254,6 +280,6 @@ app.post('/api/import', (req, res) => {
 app.use(express.static(join(__dirname, '..', 'frontend')));
 
 app.listen(PORT, () => {
-  console.log(`Tensió escoltant a http://0.0.0.0:${PORT}`);
+  console.log(`Tensió escoltant a http://127.0.0.1:${PORT}`);
   scheduleBackup();
 });

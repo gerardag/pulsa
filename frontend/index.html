@@ -103,15 +103,22 @@
   <div class="modal">
     <button class="modal-x" id="cfg-close" aria-label="Tancar">&times;</button>
     <h2>Configuració</h2>
-    <p class="muted" style="margin:0;font-size:13px">Notificació de Telegram si a les 9:00 no hi ha cap lectura del dia.</p>
+    <p class="muted" style="margin:0;font-size:13px">Notificació de Telegram si no hi ha cap lectura del dia a l'hora configurada.</p>
     <div class="field">
       <label>Token del bot</label>
-      <input type="password" id="cfg-token" placeholder="123456:ABC-DEF..." autocomplete="off">
+      <div style="position:relative">
+        <input type="password" id="cfg-token" placeholder="123456:ABC-DEF..." autocomplete="off" style="padding-right:38px">
+        <button type="button" id="cfg-token-toggle" title="Mostra/amaga el token" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;padding:2px 4px;color:var(--muted,#888)">👁</button>
+      </div>
       <p class="hint" id="cfg-token-hint"></p>
     </div>
     <div class="field">
       <label>Channel / chat id</label>
       <input type="text" id="cfg-chat" placeholder="@elmeucanal o -1001234567890" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Hora del recordatori</label>
+      <input type="time" id="cfg-notify-at" value="09:00" style="width:130px">
     </div>
     <div class="ok" id="cfg-ok" style="display:none"></div>
     <div class="err" id="cfg-err" style="display:none"></div>
@@ -364,6 +371,14 @@ $('#cal-next').onclick = () => { calMonth++; if (calMonth>11){calMonth=0;calYear
 
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+// ---------- Toggle token visibility ----------
+$('#cfg-token-toggle').addEventListener('click', () => {
+  const inp = $('#cfg-token');
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  $('#cfg-token-toggle').textContent = show ? '🙈' : '👁';
+});
+
 // ---------- Configuració (Telegram) ----------
 function cfgMsg(kind, text) {
   $('#cfg-ok').style.display = 'none'; $('#cfg-err').style.display = 'none';
@@ -375,17 +390,17 @@ function cfgMsg(kind, text) {
 async function openConfig() {
   const c = await api('/config');
   $('#cfg-chat').value = c.chatId || '';
-  $('#cfg-token').value = '';
-  $('#cfg-token-hint').textContent = c.hasToken
-    ? 'Ja hi ha un token desat. Deixa-ho buit per mantenir-lo.'
-    : 'Cap token desat.';
+  $('#cfg-token').value = c.token || '';
+  $('#cfg-token').type = 'password';
+  $('#cfg-token-toggle').textContent = '👁';
+  $('#cfg-notify-at').value = c.notifyAt || '09:00';
   cfgMsg();
   $('#cfg-bg').classList.add('open');
 }
 function closeConfig() { $('#cfg-bg').classList.remove('open'); }
 
 function cfgBody() {
-  return { token: $('#cfg-token').value, chatId: $('#cfg-chat').value };
+  return { token: $('#cfg-token').value, chatId: $('#cfg-chat').value, notifyAt: $('#cfg-notify-at').value };
 }
 
 $('#cfg-open').onclick = openConfig;

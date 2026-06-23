@@ -1,13 +1,11 @@
 # Registre de tensió arterial
 
-Aplicació autoallotjada per portar un **registre diari de la tensió arterial**
-(sistòlica / màxima i diastòlica / mínima), amb diverses lectures per dia,
-vista calendari i exportació a PDF, CSV i PDF calendari. Pensada per córrer al
-teu servidor de casa amb Docker.
+Pulsa, és una aplicació per portar un **registre de la tensió arterial** amb diverses lectures per dia,
+vista calendari i exportació amb diversos formats.
 
 ## Què fa
 
-- Registra lectures de tensió amb **data, hora, sistòlica, diastòlica, pols i notes**.
+- Registra lectures de tensió amb **data, hora, sistòlica, diastòlica i pols**.
 - Permet **més d'una lectura per dia** (matí/vespre, etc.) indicant l'hora.
 - Classifica cada lectura automàticament (Òptima, Normal, Hipertensió grau 1/2…)
   segons llindars habituals (ESC/ESH) i la pinta amb color.
@@ -27,6 +25,15 @@ teu servidor de casa amb Docker.
 - Res més: SQLite és el mòdul integrat `node:sqlite` de Node 22. Les úniques
   dependències externes són **Express** (servidor) i **pdfkit** (generació de PDF,
   JS pur, sense binaris natius).
+
+## Desenvolupament
+
+Pots executar el projecte en local executant la següent comanda dins de la carpeta `backend/` instal·lant primer les seves dependències:
+
+```
+cd backedn && npm install
+DB_PATH=./tensio.db PORT=3000 node server.js
+```
 
 ## Desplegament
 
@@ -58,14 +65,14 @@ esborra `./data`.
 
 ### Còpia de seguretat
 
+A part de poder fer una còpia de la BBDD directament, per defecte cada dia a les 3:00 es fa genera un export amb JSON de les dades per si les volem guardar o importar en qualsevol moment.
+
 ```bash
 # la base de dades és un fitxer normal al teu disc
 cp ./data/tensio.db ./tensio-backup.db
 ```
 
 ## Ús
-
-DATA_DIR=./data PORT=3000 node server.js
 
 1. Omple **data, hora, sistòlica, diastòlica** (pols i notes són opcionals) i prem
    **Desar lectura**. La data i l'hora es preomplen amb el moment actual.
@@ -123,6 +130,3 @@ Aquesta és una eina de registre personal, **no assessorament mèdic**. La class
 és orientativa i segueix llindars habituals; qualsevol decisió sobre la teva tensió
 arterial l'has de prendre amb el teu professional sanitari.
 
-## Llicència
-
-Ús personal.
