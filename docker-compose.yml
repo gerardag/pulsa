@@ -1,0 +1,14 @@
+services:
+  tensio:
+    build: .
+    container_name: tensio
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Bind mount: la base de dades SQLite viu a ./data del projecte
+      - ./data:/app/data
+    environment:
+      - PORT=3000
+      - DB_PATH=/app/data/tensio.db
+      - TZ=Europe/Madrid

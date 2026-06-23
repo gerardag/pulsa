@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Dades personals (lectures, token de Telegram, chat id)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+
+# Variables d'entorn / secrets
+.env
+.env.*
+
+# SO
+.DS_Store
